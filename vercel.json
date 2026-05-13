@@ -17,5 +17,5 @@
       ]
     }
   ],
-  "public": "public"
+  "outputDirectory": "public"
 }

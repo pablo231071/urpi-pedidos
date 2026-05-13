@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedidos URPI</title>
+  <meta name="description" content="Formulario de pedidos semanales URPI">
+  <meta name="theme-color" content="#1D9E75">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pedidos URPI">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="icon" href="/icons/icon-192.png">
+  <style>
+    :root {
+      --green: #1D9E75;
+      --green-dark: #0F6E56;
+      --green-light: #E1F5EE;
+      --amber: #EF9F27;
+      --blue: #378ADD;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --border: rgba(0,0,0,0.12);
+      --bg: #f5f5f3;
+      --card: #ffffff;
+      --radius: 12px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text: #f0f0ee;
+        --text-muted: #999;
+        --border: rgba(255,255,255,0.12);
+        --bg: #1a1a18;
+        --card: #242422;
+        --green-light: #0a3328;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 2rem;
+    }
+    .topbar {
+      background: var(--green);
+      color: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .topbar-icon { font-size: 22px; }
+    .topbar h1 { font-size: 17px; font-weight: 600; flex: 1; }
+    .topbar small { font-size: 12px; opacity: 0.8; }
+    .container { max-width: 520px; margin: 0 auto; padding: 16px; }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px;
+    }
+    .meta-grid .full { grid-column: 1 / -1; }
+    label {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    select, input[type="text"], input[type="date"] {
+      width: 100%;
+      padding: 9px 10px;
+      font-size: 15px;
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-appearance: none;
+    }
+    select:focus, input:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+      cursor: pointer;
+      background: var(--card);
+      border-bottom: 0.5px solid var(--border);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .section-header .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .section-header span { flex: 1; font-size: 15px; font-weight: 500; }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--green-light);
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .chevron {
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+    .chevron.open { transform: rotate(180deg); }
+    .section-body { display: none; padding: 0 16px; }
+    .section-body.open { display: block; }
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .item-row:last-child { border-bottom: none; }
+    .item-info { flex: 1; }
+    .item-name { font-size: 14px; color: var(--text); }
+    .item-unit { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .qty-wrap { display: flex; align-items: center; gap: 6px; }
+    .qty-btn {
+      width: 30px; height: 30px;
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+    .qty-btn:active { background: var(--green-light); }
+    .qty-input {
+      width: 42px;
+      text-align: center;
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 2px;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .qty-input:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    .notes-wrap { padding: 16px; }
+    textarea {
+      width: 100%;
+      padding: 9px 10px;
+      font-size: 14px;
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      resize: vertical;
+      min-height: 70px;
+      font-family: inherit;
+    }
+    textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    .btn-wa {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: var(--radius);
+      background: #25D366;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-wa:active { background: #1da851; transform: scale(0.98); }
+    .btn-copy {
+      width: 100%;
+      padding: 12px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      color: var(--text);
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-copy:active { background: var(--green-light); }
+    .preview-card {
+      padding: 14px 16px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+      font-family: monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: none;
+    }
+    .preview-card.open { display: block; }
+    .install-banner {
+      display: none;
+      background: var(--green-light);
+      border: 0.5px solid var(--green);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: var(--green-dark);
+      line-height: 1.5;
+    }
+    .install-banner strong { display: block; margin-bottom: 4px; font-size: 14px; }
+    .install-banner button {
+      margin-top: 8px;
+      padding: 6px 14px;
+      border: 0.5px solid var(--green);
+      border-radius: 8px;
+      background: var(--green);
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .section-desayuno-dot { background: var(--amber); }
+    .section-picnic-dot { background: var(--blue); }
+    .section-limpieza-dot { background: var(--green); }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a1a1a;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      transition: transform 0.3s;
+      z-index: 100;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-icon">🏠</span>
+  <h1>Pedidos URPI</h1>
+  <small id="semana-label"></small>
+</div>
+
+<div class="container">
+
+  <div id="install-banner" class="install-banner"></div>
+
+  <div class="card">
+    <div class="meta-grid">
+      <div class="full">
+        <label>Casa</label>
+        <select id="casa">
+          <option value="">Seleccionar casa…</option>
+          <option>Milema</option>
+          <option>Maria Cristina</option>
+          <option>La Hosteria</option>
+          <option>Mencey</option>
+          <option>La Molina</option>
+        </select>
+      </div>
+      <div>
+        <label>Responsable</label>
+        <input type="text" id="responsable" placeholder="Tu nombre…">
+      </div>
+      <div>
+        <label>Fecha</label>
+        <input type="date" id="fecha">
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="sec-desayuno">
+    <div class="section-header" onclick="toggleSec('desayuno')">
+      <span class="dot section-desayuno-dot"></span>
+      <span>Desayuno</span>
+      <span class="badge" id="badge-desayuno">0</span>
+      <span class="chevron open" id="chev-desayuno">▾</span>
+    </div>
+    <div class="section-body open" id="body-desayuno">
+      <div id="grid-desayuno"></div>
+    </div>
+  </div>
+
+  <div class="card" id="sec-picnic">
+    <div class="section-header" onclick="toggleSec('picnic')">
+      <span class="dot section-picnic-dot"></span>
+      <span>Pic-nic</span>
+      <span class="badge" id="badge-picnic">0</span>
+      <span class="chevron open" id="chev-picnic">▾</span>
+    </div>
+    <div class="section-body open" id="body-picnic">
+      <div id="grid-picnic"></div>
+    </div>
+  </div>
+
+  <div class="card" id="sec-limpieza">
+    <div class="section-header" onclick="toggleSec('limpieza')">
+      <span class="dot section-limpieza-dot"></span>
+      <span>Limpieza</span>
+      <span class="badge" id="badge-limpieza">0</span>
+      <span class="chevron open" id="chev-limpieza">▾</span>
+    </div>
+    <div class="section-body open" id="body-limpieza">
+      <div id="grid-limpieza"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="notes-wrap">
+      <label>Notas adicionales</label>
+      <textarea id="notas" placeholder="Observaciones del pedido…"></textarea>
+    </div>
+  </div>
+
+  <div id="preview-msg" class="preview-card"></div>
+
+  <button class="btn-wa" onclick="enviarWhatsApp()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Enviar pedido por WhatsApp
+  </button>
+
+  <button class="btn-copy" onclick="copiarMensaje()">
+    📋 Copiar mensaje
+  </button>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PRODUCTS = {
+  desayuno: [
+    {n:"Leche", u:"lts"},
+    {n:"Zumo", u:"lts"},
+    {n:"Café", u:"pts"},
+    {n:"Azúcar", u:"pts"},
+    {n:"Mantequilla", u:"uds"},
+    {n:"Mermelada", u:"fcs"},
+    {n:"Cereal Chocolate", u:"cajas"},
+    {n:"Cereal de Maíz", u:"cajas"},
+    {n:"Té negro", u:"cajas"},
+    {n:"Té rojo", u:"cajas"},
+  ],
+  picnic: [
+    {n:"Queso", u:"pts"},
+    {n:"Jamón", u:"pts"},
+    {n:"Pavo", u:"pts"},
+    {n:"Salami", u:"pts"},
+    {n:"Dulces", u:"pts"},
+    {n:"Pan molde", u:"pts"},
+    {n:"Bolsitas para bocadillos", u:"cajas"},
+    {n:"Papel transparente", u:"uds"},
+  ],
+  limpieza: [
+    {n:"Friegasuelos", u:"uds"},
+    {n:"Lejía", u:"uds"},
+    {n:"Jabón de lavar", u:"uds"},
+    {n:"Lavavajillas", u:"uds"},
+    {n:"Bolsas pequeñas", u:"uds"},
+    {n:"Bolsas grandes", u:"uds"},
+    {n:"Fregonas", u:"uds"},
+    {n:"CIF", u:"uds"},
+    {n:"Ambientador spray", u:"uds"},
+    {n:"Percarbonato", u:"uds"},
+  ]
+};
+
+function buildGrid(cat) {
+  const grid = document.getElementById('grid-' + cat);
+  PRODUCTS[cat].forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <div class="item-info">
+        <div class="item-name">${p.n}</div>
+        <div class="item-unit">${p.u}</div>
+      </div>
+      <div class="qty-wrap">
+        <button class="qty-btn" onclick="changeQty('${cat}',${i},-1)">−</button>
+        <input class="qty-input" type="number" min="0" value="0" id="q_${cat}_${i}" oninput="updateBadge('${cat}')">
+        <button class="qty-btn" onclick="changeQty('${cat}',${i},1)">+</button>
+      </div>`;
+    grid.appendChild(row);
+  });
+}
+
+['desayuno','picnic','limpieza'].forEach(buildGrid);
+
+function changeQty(cat, i, delta) {
+  const inp = document.getElementById(`q_${cat}_${i}`);
+  inp.value = Math.max(0, (parseInt(inp.value) || 0) + delta);
+  updateBadge(cat);
+}
+
+function updateBadge(cat) {
+  let count = 0;
+  PRODUCTS[cat].forEach((_, i) => {
+    if ((parseInt(document.getElementById(`q_${cat}_${i}`).value) || 0) > 0) count++;
+  });
+  document.getElementById('badge-' + cat).textContent = count;
+}
+
+function toggleSec(cat) {
+  const body = document.getElementById('body-' + cat);
+  const chev = document.getElementById('chev-' + cat);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+function getFecha() {
+  const f = document.getElementById('fecha').value;
+  if (!f) return '';
+  const [y, m, d] = f.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function buildMsg() {
+  const casa = document.getElementById('casa').value;
+  const resp = document.getElementById('responsable').value.trim();
+  const fecha = getFecha();
+  const notas = document.getElementById('notas').value.trim();
+  if (!casa) return null;
+  const catLabels = { desayuno: 'DESAYUNO', picnic: 'PIC-NIC', limpieza: 'LIMPIEZA' };
+  let msg = `Buenos días.\nPedido ${casa}. ${fecha}\n`;
+  ['desayuno','picnic','limpieza'].forEach(cat => {
+    const lines = [];
+    PRODUCTS[cat].forEach((p, i) => {
+      const q = parseInt(document.getElementById(`q_${cat}_${i}`).value) || 0;
+      if (q > 0) lines.push(`${p.n}... ${q} ${p.u}`);
+    });
+    if (lines.length > 0) {
+      msg += `\n${catLabels[cat]}\n`;
+      lines.forEach(l => msg += l + '\n');
+    }
+  });
+  if (resp) msg += `\nResponsable: ${resp}\n`;
+  if (notas) msg += `\nNotas: ${notas}\n`;
+  return msg;
+}
+
+function enviarWhatsApp() {
+  const msg = buildMsg();
+  if (!msg) { showToast('⚠️ Selecciona una casa primero'); return; }
+  mostrarPreview(msg);
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function copiarMensaje() {
+  const msg = buildMsg();
+  if (!msg) { showToast('⚠️ Selecciona una casa primero'); return; }
+  mostrarPreview(msg);
+  navigator.clipboard.writeText(msg).then(() => showToast('✅ Mensaje copiado'));
+}
+
+function mostrarPreview(msg) {
+  const box = document.getElementById('preview-msg');
+  box.textContent = msg;
+  box.classList.add('open');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Fecha de hoy
+document.getElementById('fecha').valueAsDate = new Date();
+
+// Semana
+const now = new Date();
+const start = new Date(now.getFullYear(), 0, 1);
+const week = Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
+document.getElementById('semana-label').textContent = `Semana ${week}`;
+
+// Banner instalación PWA
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const banner = document.getElementById('install-banner');
+  banner.style.display = 'block';
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isIOS) {
+    banner.innerHTML = `<strong>📲 Instalar app en iPhone</strong>Pulsa el botón Compartir (⎋) en Safari y luego "Añadir a pantalla de inicio".`;
+  } else {
+    banner.innerHTML = `<strong>📲 Instalar app</strong>Instala la app en tu móvil para acceso rápido sin internet.<button onclick="instalarApp()">Instalar ahora</button>`;
+  }
+});
+
+function instalarApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('install-banner').style.display = 'none';
+    });
+  }
+}
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js');
+  });
+}
+</script>
+</body>
+</html>

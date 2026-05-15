@@ -396,11 +396,61 @@ const PRODUCTS = {
   ]
 };
 
+const PRODUCTS_MENCEY = {
+  desayuno: [
+    {n:"Colacao", u:"uds"},
+    {n:"Gofio", u:"uds"},
+    {n:"Mermelada fresa", u:"uds"},
+    {n:"Mermelada melocotón", u:"uds"},
+    {n:"Manzanilla", u:"cajas"},
+    {n:"Menta poleo", u:"cajas"},
+    {n:"Tila", u:"cajas"},
+    {n:"Té verde", u:"cajas"},
+    {n:"Pimienta negra", u:"uds"},
+    {n:"Aceite", u:"uds"},
+    {n:"Vinagre", u:"uds"},
+    {n:"Sal", u:"uds"},
+    {n:"Agua pequeña", u:"uds"},
+    {n:"Bollitos chocolate", u:"uds"},
+    {n:"Croissant", u:"uds"},
+    {n:"Sobaos", u:"uds"},
+    {n:"Yogur de beber", u:"uds"},
+    {n:"Quesos pequeños", u:"uds"},
+    {n:"Zumos pequeños", u:"uds"},
+  ],
+  picnic: [
+    {n:"Bolsas de traslado", u:"uds"},
+  ],
+  limpieza: [
+    {n:"Papel de cocina", u:"uds"},
+    {n:"Papel higiénico", u:"uds"},
+    {n:"Gel ducha", u:"uds"},
+    {n:"Gel de manos", u:"uds"},
+    {n:"Pastillas lavavajillas", u:"uds"},
+    {n:"Sal lavavajillas", u:"uds"},
+    {n:"Abrillantador lavavajillas", u:"uds"},
+    {n:"Vinagre de limpieza", u:"uds"},
+    {n:"Quitagrasa", u:"uds"},
+    {n:"Paños microfibras", u:"uds"},
+    {n:"Limpiacristales", u:"uds"},
+    {n:"Guantes", u:"uds"},
+    {n:"Fregona", u:"uds"},
+    {n:"Escoba/palos", u:"uds"},
+    {n:"Estropajo", u:"uds"},
+  ]
+};
+
+function getActiveProducts(cat) {
+  return [...PRODUCTS[cat], ...PRODUCTS_MENCEY[cat]];
+}
+
 function buildGrid(cat) {
   const grid = document.getElementById('grid-' + cat);
-  PRODUCTS[cat].forEach((p, i) => {
+  grid.innerHTML = '';
+  getActiveProducts(cat).forEach((p, i) => {
     const row = document.createElement('div');
     row.className = 'item-row';
+    const isMenceyExtra = i >= PRODUCTS[cat].length;
     row.innerHTML = `
       <div class="item-info">
         <div class="item-name">${p.n}</div>
@@ -417,6 +467,13 @@ function buildGrid(cat) {
 
 ['desayuno','picnic','limpieza'].forEach(buildGrid);
 
+document.getElementById('casa').addEventListener('change', () => {
+  ['desayuno','picnic','limpieza'].forEach(cat => {
+    buildGrid(cat);
+    updateBadge(cat);
+  });
+});
+
 function changeQty(cat, i, delta) {
   const inp = document.getElementById(`q_${cat}_${i}`);
   inp.value = Math.max(0, (parseInt(inp.value) || 0) + delta);
@@ -425,7 +482,7 @@ function changeQty(cat, i, delta) {
 
 function updateBadge(cat) {
   let count = 0;
-  PRODUCTS[cat].forEach((_, i) => {
+  getActiveProducts(cat).forEach((_, i) => {
     if ((parseInt(document.getElementById(`q_${cat}_${i}`).value) || 0) > 0) count++;
   });
   document.getElementById('badge-' + cat).textContent = count;
@@ -455,7 +512,7 @@ function buildMsg() {
   let msg = `Buenos días.\nPedido ${casa}. ${fecha}\n`;
   ['desayuno','picnic','limpieza'].forEach(cat => {
     const lines = [];
-    PRODUCTS[cat].forEach((p, i) => {
+    getActiveProducts(cat).forEach((p, i) => {
       const q = parseInt(document.getElementById(`q_${cat}_${i}`).value) || 0;
       if (q > 0) lines.push(`${p.n}... ${q} ${p.u}`);
     });

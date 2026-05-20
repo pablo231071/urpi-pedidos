@@ -1,4 +1,4 @@
-const CACHE = 'urpi-pedidos-v1';
+const CACHE = 'urpi-pedidos-v2';
 const ASSETS = [
   '/',
   '/index.html',

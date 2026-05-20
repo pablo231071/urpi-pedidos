@@ -324,6 +324,18 @@
     </div>
   </div>
 
+  <div class="card" id="sec-meriendas">
+    <div class="section-header" onclick="toggleSec('meriendas')">
+      <span class="dot" style="background:#E05C97"></span>
+      <span>Meriendas</span>
+      <span class="badge" id="badge-meriendas">0</span>
+      <span class="chevron open" id="chev-meriendas">▾</span>
+    </div>
+    <div class="section-body open" id="body-meriendas">
+      <div id="grid-meriendas"></div>
+    </div>
+  </div>
+
   <div class="card" id="sec-limpieza">
     <div class="section-header" onclick="toggleSec('limpieza')">
       <span class="dot section-limpieza-dot"></span>
@@ -392,6 +404,18 @@ const PRODUCTS = {
     {n:"CIF", u:"uds"},
     {n:"Ambientador spray", u:"uds"},
     {n:"Percarbonato", u:"uds"},
+  ],
+  meriendas: [
+    {n:"Huevos", u:"uds"},
+    {n:"Zumos pequeños", u:"uds"},
+    {n:"Batido de fresa", u:"uds"},
+    {n:"Batido chocolate", u:"uds"},
+    {n:"Yogures", u:"uds"},
+    {n:"Gelatina", u:"uds"},
+    {n:"Sobaos", u:"uds"},
+    {n:"Magdalenas", u:"uds"},
+    {n:"Perritos calientes", u:"uds"},
+    {n:"Pan para perritos", u:"uds"},
   ]
 };
 
@@ -436,7 +460,11 @@ const PRODUCTS_MENCEY = {
     {n:"Fregona", u:"uds"},
     {n:"Escoba/palos", u:"uds"},
     {n:"Estropajo", u:"uds"},
-  ]
+    {n:"Gel de baño", u:"uds"},
+    {n:"Desengrasante", u:"uds"},
+    {n:"Papel secamanos", u:"uds"},
+  ],
+  meriendas: []
 };
 
 function getActiveProducts(cat) {
@@ -464,10 +492,10 @@ function buildGrid(cat) {
   });
 }
 
-['desayuno','picnic','limpieza'].forEach(buildGrid);
+['desayuno','picnic','meriendas','limpieza'].forEach(buildGrid);
 
 document.getElementById('casa').addEventListener('change', () => {
-  ['desayuno','picnic','limpieza'].forEach(cat => {
+  ['desayuno','picnic','meriendas','limpieza'].forEach(cat => {
     buildGrid(cat);
     updateBadge(cat);
   });
@@ -507,9 +535,9 @@ function buildMsg() {
   const fecha = getFecha();
   const notas = document.getElementById('notas').value.trim();
   if (!casa) return null;
-  const catLabels = { desayuno: 'DESAYUNO', picnic: 'PIC-NIC', limpieza: 'LIMPIEZA' };
+  const catLabels = { desayuno: 'DESAYUNO', picnic: 'PIC-NIC', meriendas: 'MERIENDAS', limpieza: 'LIMPIEZA' };
   let msg = `Buenos días.\nPedido ${casa}. ${fecha}\n`;
-  ['desayuno','picnic','limpieza'].forEach(cat => {
+  ['desayuno','picnic','meriendas','limpieza'].forEach(cat => {
     const lines = [];
     getActiveProducts(cat).forEach((p, i) => {
       const q = parseInt(document.getElementById(`q_${cat}_${i}`).value) || 0;
